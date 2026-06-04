@@ -19,7 +19,7 @@ default Homebrew resolves that to `https://github.com/opzero1/homebrew-codex-por
 codex-portal login
 codex-portal models refresh
 codex-portal install
-brew services start codex-portal
+brew services start opzero1/codex-portal/codex-portal
 codex-portal status
 ```
 
@@ -57,13 +57,13 @@ curl -N http://127.0.0.1:8766/v1/responses \
 ```sh
 brew update
 brew reinstall --HEAD codex-portal
-brew services restart codex-portal
+brew services restart opzero1/codex-portal/codex-portal
 ```
 
 ## Uninstall
 
 ```sh
-brew services stop codex-portal
+brew services stop opzero1/codex-portal/codex-portal
 codex-portal uninstall
 codex-portal auth logout
 brew uninstall codex-portal

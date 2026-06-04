@@ -32,7 +32,7 @@ class CodexPortal < Formula
         codex-portal login
         codex-portal models refresh
         codex-portal install
-        brew services start codex-portal
+        brew services start opzero1/codex-portal/codex-portal
 
       codex-portal install writes only the marked Codex Portal block in
       ~/.codex/config.toml. It is not run automatically by Homebrew.

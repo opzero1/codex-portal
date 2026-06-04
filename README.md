@@ -12,7 +12,7 @@ brew install --HEAD codex-portal
 codex-portal login
 codex-portal models refresh
 codex-portal install
-brew services start codex-portal
+brew services start opzero1/codex-portal/codex-portal
 ```
 
 See [docs/homebrew.md](docs/homebrew.md) for smoke tests, upgrade, and uninstall
