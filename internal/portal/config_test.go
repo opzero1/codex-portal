@@ -70,3 +70,58 @@ func TestInstallAndUninstallManagedBlock(t *testing.T) {
 		t.Fatalf("uninstall removed unrelated config:\n%s", string(removed))
 	}
 }
+
+func TestInstallPlacesManagedBlockBeforeFirstTableAndRestoresModel(t *testing.T) {
+	home := t.TempDir()
+	codexHome := t.TempDir()
+	configPath := filepath.Join(codexHome, "config.toml")
+	initial := strings.Join([]string{
+		`model = "gpt-5.5"`,
+		`model_reasoning_effort = "xhigh"`,
+		`approval_policy = "never"`,
+		``,
+		`[mcp_servers.figma]`,
+		`url = "https://mcp.figma.com/mcp"`,
+		``,
+	}, "\n")
+	if err := os.WriteFile(configPath, []byte(initial), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := InstallCodexConfig(home, DefaultConfig(), configPath); err != nil {
+		t.Fatal(err)
+	}
+	installedData, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	installed := string(installedData)
+	rootOldModel := `model = "gpt-5.5"`
+	if strings.Contains(strings.ReplaceAll(installed, savedConfigPrefix+rootOldModel, ""), rootOldModel) {
+		t.Fatalf("old root model was not removed:\n%s", installed)
+	}
+	if strings.Index(installed, ManagedStart) > strings.Index(installed, `[mcp_servers.figma]`) {
+		t.Fatalf("managed block must be before first table:\n%s", installed)
+	}
+	if !strings.Contains(installed, savedConfigPrefix+rootOldModel) {
+		t.Fatalf("old root model was not saved for uninstall:\n%s", installed)
+	}
+	if strings.Index(installed, `model_reasoning_effort = "xhigh"`) > strings.Index(installed, ManagedStart) {
+		t.Fatalf("existing root keys should remain before provider table:\n%s", installed)
+	}
+
+	if err := UninstallCodexConfig(home, configPath); err != nil {
+		t.Fatal(err)
+	}
+	removedData, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	removed := string(removedData)
+	if !strings.Contains(removed, rootOldModel) {
+		t.Fatalf("uninstall did not restore previous model:\n%s", removed)
+	}
+	if strings.Contains(removed, ManagedStart) || strings.Contains(removed, savedConfigPrefix) {
+		t.Fatalf("uninstall left managed metadata:\n%s", removed)
+	}
+}
