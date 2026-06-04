@@ -46,8 +46,15 @@ func LoadCatalog(home string) (ModelCatalog, error) {
 	if len(catalog.Models) == 0 {
 		return FallbackCatalog(), nil
 	}
+	generated := BuildAliases(catalog.Models)
 	if catalog.Aliases == nil {
-		catalog.Aliases = BuildAliases(catalog.Models)
+		catalog.Aliases = generated
+	} else {
+		for alias, target := range generated {
+			if _, ok := catalog.Aliases[alias]; !ok {
+				catalog.Aliases[alias] = target
+			}
+		}
 	}
 	return catalog, nil
 }
@@ -185,6 +192,25 @@ func BuildAliases(models []ModelInfo) map[string]string {
 			aliases[alias] = target
 		}
 	}
+	for _, alias := range []string{"5.5", "gpt-5.5"} {
+		if opus != "" {
+			aliases[alias] = opus
+		} else if sonnet != "" {
+			aliases[alias] = sonnet
+		}
+	}
+	for _, alias := range []string{"5.4", "gpt-5.4"} {
+		if sonnet != "" {
+			aliases[alias] = sonnet
+		}
+	}
+	for _, alias := range []string{"5.4-mini", "gpt-5.4-mini"} {
+		if haiku != "" {
+			aliases[alias] = haiku
+		} else if sonnet != "" {
+			aliases[alias] = sonnet
+		}
+	}
 	return aliases
 }
 
@@ -197,7 +223,10 @@ func modelSortKey(m ModelInfo) string {
 }
 
 func (c ModelCatalog) Resolve(id string) (ModelInfo, bool) {
+	id = strings.TrimSpace(id)
 	if target, ok := c.Aliases[id]; ok {
+		id = target
+	} else if target, ok := c.Aliases[strings.ToLower(id)]; ok {
 		id = target
 	}
 	for _, model := range c.Models {

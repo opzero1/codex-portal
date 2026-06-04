@@ -63,6 +63,19 @@ func TestBuildAnthropicRequestPreservesToolSearchOutputTools(t *testing.T) {
 	}
 }
 
+func TestBuildAnthropicRequestAcceptsCodexBuiltInModelAlias(t *testing.T) {
+	tr, err := BuildAnthropicRequest(map[string]any{
+		"model": "5.5",
+		"input": "Say ok.",
+	}, FallbackCatalog())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tr.Anthropic["model"] != "claude-opus-4-5" {
+		t.Fatalf("Codex built-in alias resolved to wrong model: %+v", tr.Anthropic)
+	}
+}
+
 func TestAnthropicToolUseToResponsesItems(t *testing.T) {
 	tools := NewToolNameMap([]any{
 		map[string]any{"type": "function", "name": "exec_command"},
