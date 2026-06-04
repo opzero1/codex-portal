@@ -56,9 +56,11 @@ curl -N http://127.0.0.1:8766/v1/responses \
 
 ```sh
 brew update
-brew reinstall --HEAD codex-portal
+brew reinstall codex-portal
 brew services restart opzero1/codex-portal/codex-portal
 ```
+
+Homebrew preserves the original HEAD install option when reinstalling.
 
 ## Uninstall
 
